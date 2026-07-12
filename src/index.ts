@@ -9,6 +9,8 @@ import { handleSelesai } from './bot/handlers/selesai.js';
 import { handleProfil } from './bot/handlers/profil.js';
 import { handleDashboard } from './bot/handlers/dashboard.js';
 import { handleLibur } from './bot/handlers/libur.js';
+import { handleEdit, tryEditReply } from './bot/handlers/edit.js';
+import { handleRiwayat } from './bot/handlers/riwayat.js';
 import { startReminderLoop } from './bot/reminder.js';
 import { handleCallback } from './bot/handlers/callbacks.js';
 import { getClarify } from './bot/session.js';
@@ -18,6 +20,8 @@ const bot = new Bot(config.telegramToken);
 bot.command('start', wrap(handleStart));
 bot.command('antrian', wrap(handleAntrian));
 bot.command('selesai', wrap(handleSelesai));
+bot.command('edit', wrap(handleEdit));
+bot.command('riwayat', wrap(handleRiwayat));
 bot.command('profil', wrap(handleProfil));
 bot.command('dashboard', wrap(handleDashboard));
 bot.command('libur', wrap(handleLibur));
@@ -31,13 +35,16 @@ bot.on('message:text', wrap(async (ctx) => {
   // 1) Wizard menelan pesan bila aktif.
   if (await tryWizardStep(ctx)) return;
 
-  // 2) Menunggu koreksi klarifikasi → lanjutkan alur forward.
+  // 2) Menunggu tanggal untuk /edit.
+  if (await tryEditReply(ctx)) return;
+
+  // 3) Menunggu koreksi klarifikasi → lanjutkan alur forward.
   if (getClarify(chatId)) {
     await handleForward(ctx, text);
     return;
   }
 
-  // 3) Forward / paste order.
+  // 4) Forward / paste order.
   const msg = ctx.message as any;
   const isForward = !!(msg.forward_origin || msg.forward_date);
   if (isForward || text.length > 25) {
@@ -45,7 +52,7 @@ bot.on('message:text', wrap(async (ctx) => {
     return;
   }
 
-  // 4) Chit-chat → arahkan.
+  // 5) Chit-chat → arahkan.
   await ctx.reply(M.forwardHint);
 }));
 
@@ -81,6 +88,8 @@ async function main() {
       { command: 'start', description: 'Setup / atur ulang profil' },
       { command: 'antrian', description: 'Lihat antrian aktif' },
       { command: 'selesai', description: 'Tandai order selesai' },
+      { command: 'edit', description: 'Ubah order aktif (selesai/deadline/batal)' },
+      { command: 'riwayat', description: 'Order selesai & ditolak' },
       { command: 'profil', description: 'Lihat profil kapasitas' },
       { command: 'dashboard', description: 'Link dashboard pribadimu' },
       { command: 'libur', description: 'Catat hari libur/cuti' },

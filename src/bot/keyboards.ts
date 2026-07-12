@@ -28,3 +28,23 @@ export function selesaiKeyboard(orders: Order[]): InlineKeyboard {
   }
   return kb;
 }
+
+/** Daftar order aktif untuk /edit. edit:<orderId> */
+export function editPickKeyboard(orders: Order[]): InlineKeyboard {
+  const kb = new InlineKeyboard();
+  for (const o of orders) {
+    const dl = o.deadline ? ` (${o.deadline})` : '';
+    kb.text(`${o.quantity}× ${o.item_label}${dl}`, `edit:${o.id}`).row();
+  }
+  return kb;
+}
+
+/** Pilihan aksi edit satu order. editf:<orderId>:<field> */
+export function editFieldKeyboard(orderId: string): InlineKeyboard {
+  return new InlineKeyboard()
+    .text('⏩ Percepat/ubah selesai', `editf:${orderId}:finish`)
+    .row()
+    .text('📅 Ubah deadline', `editf:${orderId}:deadline`)
+    .row()
+    .text('🗑 Batalkan order', `editf:${orderId}:cancel`);
+}

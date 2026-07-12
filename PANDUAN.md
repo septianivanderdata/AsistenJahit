@@ -58,6 +58,9 @@ Kalau bot kurang yakin (jenis tak dikenal / deadline tidak disebut), dia tanya *
 |---|---|
 | `/antrian` | Lihat semua order aktif, urut deadline + kapasitas terisi sampai kapan |
 | `/selesai` | Order rampung? Tandai selesai → kapasitas bebas lagi |
+| `/edit` | Ubah order aktif: percepat/geser tanggal selesai, ubah deadline, atau batalkan |
+| `/riwayat` | Lihat order yang sudah selesai, ditolak, atau dibatalkan |
+| `/libur` | Catat hari libur/cuti — contoh: `/libur 17 agustus` (jadwal otomatis melewatinya) |
 | `/profil` | Lihat/ubah jenis jahitan & durasi |
 | `/dashboard` | Minta link dashboard pribadimu (lihat bagian 4) |
 

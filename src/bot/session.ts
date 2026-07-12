@@ -32,15 +32,23 @@ export interface ClarifyState {
   itemTypes: ItemType[];
 }
 
+/** Menunggu balasan tanggal untuk /edit (percepat selesai / ubah deadline). */
+export interface EditState {
+  orderId: string;
+  field: 'finish' | 'deadline';
+}
+
 const STORE_PATH = join(process.cwd(), '.data', 'sessions.json');
 
 interface StoreShape {
   wizard: Record<string, WizardState>;
   clarify: Record<string, ClarifyState>;
+  edit?: Record<string, EditState>;
 }
 
 const wizard = new Map<number, WizardState>();
 const clarify = new Map<number, ClarifyState>();
+const edit = new Map<number, EditState>();
 
 loadStore();
 
@@ -50,6 +58,7 @@ function loadStore(): void {
     const data = JSON.parse(raw) as StoreShape;
     for (const [k, v] of Object.entries(data.wizard ?? {})) wizard.set(Number(k), v);
     for (const [k, v] of Object.entries(data.clarify ?? {})) clarify.set(Number(k), v);
+    for (const [k, v] of Object.entries(data.edit ?? {})) edit.set(Number(k), v);
   } catch {
     // File belum ada / korup → mulai kosong. Korup tak boleh menjatuhkan bot.
   }
@@ -59,6 +68,7 @@ function saveStore(): void {
   const data: StoreShape = {
     wizard: Object.fromEntries([...wizard].map(([k, v]) => [String(k), v])),
     clarify: Object.fromEntries([...clarify].map(([k, v]) => [String(k), v])),
+    edit: Object.fromEntries([...edit].map(([k, v]) => [String(k), v])),
   };
   try {
     mkdirSync(dirname(STORE_PATH), { recursive: true });
@@ -98,5 +108,17 @@ export function setClarify(chatId: number, c: ClarifyState): void {
 }
 export function endClarify(chatId: number): void {
   clarify.delete(chatId);
+  saveStore();
+}
+
+export function getEdit(chatId: number): EditState | undefined {
+  return edit.get(chatId);
+}
+export function setEdit(chatId: number, e: EditState): void {
+  edit.set(chatId, e);
+  saveStore();
+}
+export function endEdit(chatId: number): void {
+  edit.delete(chatId);
   saveStore();
 }

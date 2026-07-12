@@ -18,6 +18,7 @@ import { Order, Tailor } from '../../db/types.js';
 import { learnHoursPerUnit } from '../../core/learning.js';
 import { todayISO } from '../../config.js';
 import { replyMD } from '../reply.js';
+import { onEditField, onEditPick } from './edit.js';
 
 const MD = { parse_mode: 'Markdown' as const };
 
@@ -27,6 +28,8 @@ export async function handleCallback(ctx: Context): Promise<void> {
     if (data.startsWith('act:')) return await onAction(ctx, data);
     if (data.startsWith('partner:')) return await onPartner(ctx, data);
     if (data.startsWith('done:')) return await onDone(ctx, data);
+    if (data.startsWith('editf:')) return await onEditField(ctx, data);
+    if (data.startsWith('edit:')) return await onEditPick(ctx, data);
   } catch (e) {
     console.error('callback error', e);
     await ctx.answerCallbackQuery({ text: 'Ada kendala, coba lagi.' });

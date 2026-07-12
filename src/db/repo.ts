@@ -172,6 +172,22 @@ export async function getUpcomingDeadlines(
   return (data ?? []) as Order[];
 }
 
+/** Riwayat: order selesai/ditolak/batal, terbaru dulu. */
+export async function getHistory(
+  tailorId: string,
+  limit: number,
+): Promise<Order[]> {
+  const { data, error } = await db
+    .from('orders')
+    .select('*')
+    .eq('tailor_id', tailorId)
+    .in('status', ['done', 'rejected', 'cancelled'])
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as Order[];
+}
+
 /** Order yang diputuskan sejak `monthStartISO` (untuk rekap bulanan). */
 export async function getDecidedSince(
   tailorId: string,

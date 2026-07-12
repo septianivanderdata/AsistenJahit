@@ -67,6 +67,28 @@ export const M = {
     '📊 Ini dashboard pribadimu — kalender kapasitas, antrian, dan angka bulan ini.\n' +
     'Simpan linknya, jangan dibagikan ke orang lain ya (ini kunci datamu):',
 
+  // Edit
+  editEmpty: 'Tidak ada order aktif yang bisa diubah.',
+  editPick: 'Order mana yang mau diubah?',
+  editWhat: 'Mau ubah apa untuk *{label}*?',
+  editAskFinish:
+    '⏩ Selesai tanggal berapa? Balas tanggalnya, contoh: _15 agustus_ atau _2026-08-15_.\n' +
+    '(ketik *batal* untuk membatalkan)',
+  editAskDeadline:
+    '📅 Deadline barunya tanggal berapa? Contoh: _15 agustus_.\n(ketik *batal* untuk membatalkan)',
+  editFinishSet: '⏩ Oke! *{label}* kucatat selesai *{date}*. Antrian menyesuaikan.',
+  editDeadlineSet: '📅 Deadline *{label}* kuubah jadi *{date}*.',
+  editDeadlineTight:
+    '\n⚠️ Estimasi selesaimu masih lewat dari deadline baru ini — pertimbangkan oper atau percepat.',
+  editCancelled: '🗑 Order *{label}* dibatalkan. Kapasitasnya bebas lagi.',
+  editAborted: 'Oke, tidak jadi diubah 👍',
+
+  // Riwayat
+  historyHeader: '🗂 *Riwayat order* (20 terakhir):',
+  historyEmpty:
+    'Belum ada riwayat — order yang selesai, ditolak, atau dibatalkan akan muncul di sini.',
+  historyFooter: '_Rekap nilai bulan berjalan ada di /antrian dan dashboard._',
+
   // Reminder
   reminderHeader:
     '⏰ *Cek deadline hari ini:*\n{list}\n\n' +
