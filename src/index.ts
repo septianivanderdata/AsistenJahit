@@ -90,7 +90,7 @@ async function main() {
       { command: 'selesai', description: 'Tandai order selesai' },
       { command: 'edit', description: 'Ubah order aktif (selesai/deadline/batal)' },
       { command: 'riwayat', description: 'Order selesai & ditolak' },
-      { command: 'profil', description: 'Lihat profil kapasitas' },
+      { command: 'profil', description: 'Lihat/tambah/ubah jenis jahitan' },
       { command: 'dashboard', description: 'Link dashboard pribadimu' },
       { command: 'libur', description: 'Catat hari libur/cuti' },
     ]);

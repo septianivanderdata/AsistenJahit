@@ -61,7 +61,7 @@ Kalau bot kurang yakin (jenis tak dikenal / deadline tidak disebut), dia tanya *
 | `/edit` | Ubah order aktif: percepat/geser tanggal selesai, ubah deadline, atau batalkan |
 | `/riwayat` | Lihat order yang sudah selesai, ditolak, atau dibatalkan |
 | `/libur` | Catat hari libur/cuti — contoh: `/libur 17 agustus` (jadwal otomatis melewatinya) |
-| `/profil` | Lihat/ubah jenis jahitan & durasi |
+| `/profil` | Lihat jenis jahitan & durasi. Tambah: `/profil tambah gamis 5 jam` · ubah: `/profil ubah kebaya 2 hari` |
 | `/dashboard` | Minta link dashboard pribadimu (lihat bagian 4) |
 
 **Penting: rajin tekan `/selesai` begitu order rampung.** Ini yang membebaskan jadwalmu — kalau lupa, bot mengira kamu masih penuh dan menyuruh tolak order yang sebenarnya masih muat.

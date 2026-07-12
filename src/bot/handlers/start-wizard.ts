@@ -10,7 +10,16 @@ import {
   setWizard,
 } from '../session.js';
 import { parseItemDuration, parseNameBusiness, parseSchedule } from '../../util/parse.js';
-import { addItemType, addPartner, createTailor, getTailorByChat } from '../../db/repo.js';
+import {
+  addItemType,
+  addPartner,
+  createTailor,
+  getItemTypes,
+  getPartners,
+  getTailorByChat,
+  updateItemType,
+  updateTailor,
+} from '../../db/repo.js';
 
 const MD = { parse_mode: 'Markdown' as const };
 
@@ -20,7 +29,9 @@ export async function handleStart(ctx: Context): Promise<void> {
   startWizard(chatId);
   if (existing) {
     await ctx.reply(
-      'Kamu sudah pernah setup. Kita atur ulang profil dari awal ya.\n\n' + M.welcome,
+      'Kamu sudah pernah setup. Kita atur ulang profil ya — antrian, riwayat, dan link dashboard-mu *tetap sama*, tidak dibuat baru.\n' +
+        '_Cuma mau tambah/ubah jenis jahitan? Lebih cepat pakai_ /profil _tambah_ …\n\n' +
+        M.welcome,
       MD,
     );
   } else {
@@ -134,26 +145,52 @@ async function stepPartners(ctx: Context, w: WizardState, text: string): Promise
 
 async function finishWizard(ctx: Context, w: WizardState): Promise<void> {
   const chatId = ctx.chat!.id;
-  const tailor = await createTailor({
-    telegram_chat_id: chatId,
+  const existing = await getTailorByChat(chatId);
+  const profile = {
     name: w.name!,
     business_name: w.businessName ?? null,
     work_days_per_week: w.workDaysPerWeek ?? 6,
     work_hours_per_day: w.workHoursPerDay ?? 8,
-  });
-  for (const it of w.pendingItems) {
-    await addItemType({
-      tailor_id: tailor.id,
-      name: it.name,
-      hours_per_unit: it.hours_per_unit,
-    });
+  };
+
+  let tailorId: string;
+  if (existing) {
+    // Setup ulang: perbarui baris yang sama — UUID (= link dashboard),
+    // antrian, dan riwayat order tetap. Jenis jahitan di-upsert per nama;
+    // yang tidak disebut ulang dibiarkan (bisa masih dirujuk order lama).
+    await updateTailor(existing.id, profile);
+    tailorId = existing.id;
+  } else {
+    const tailor = await createTailor({ telegram_chat_id: chatId, ...profile });
+    tailorId = tailor.id;
   }
+
+  const currentItems = existing ? await getItemTypes(tailorId) : [];
+  for (const it of w.pendingItems) {
+    const match = currentItems.find(
+      (c) => c.name.toLowerCase() === it.name.toLowerCase(),
+    );
+    if (match) {
+      await updateItemType(match.id, { hours_per_unit: it.hours_per_unit });
+    } else {
+      await addItemType({
+        tailor_id: tailorId,
+        name: it.name,
+        hours_per_unit: it.hours_per_unit,
+      });
+    }
+  }
+
   const bufferedPartners = ((w as any)._partners ?? []) as {
     name: string;
     notes: string | null;
   }[];
+  const currentPartners = existing ? await getPartners(tailorId) : [];
   for (const p of bufferedPartners) {
-    await addPartner({ tailor_id: tailor.id, name: p.name, notes: p.notes });
+    const dupe = currentPartners.some(
+      (c) => c.name.toLowerCase() === p.name.toLowerCase(),
+    );
+    if (!dupe) await addPartner({ tailor_id: tailorId, name: p.name, notes: p.notes });
   }
   endWizard(chatId);
   await ctx.reply(tpl(M.setupDone, { name: w.name! }), MD);
