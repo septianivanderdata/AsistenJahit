@@ -132,6 +132,21 @@
     .badge.wait { color: var(--ink-2);    background: var(--bg);      border-color: var(--line); }
 
     .empty { color: var(--muted); font-size: .88rem; padding: 18px; text-align: center; background: var(--card); border: 1px dashed var(--line); border-radius: 12px; }
+
+    /* ---- Riwayat ---- */
+    .h-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .h-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px; border-bottom: 1px solid var(--line);
+      font-size: .86rem;
+    }
+    .h-row:last-child { border-bottom: none; }
+    .h-row .h-name { font-weight: 600; min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .h-row .h-date { color: var(--muted); font-size: .78rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .h-row .h-val { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: .82rem; }
+    .h-row.dim .h-name, .h-row.dim .h-val { color: var(--muted); font-weight: 500; }
+    .h-sum { display: flex; gap: 14px; flex-wrap: wrap; font-size: .76rem; color: var(--muted); margin-top: 10px; }
+    .h-sum b { color: var(--ink); font-variant-numeric: tabular-nums; }
     .err { background: var(--bad-bg); border: 1px solid var(--bad-line); color: var(--bad-ink); padding: 12px 14px; border-radius: 10px; margin-top: 16px; font-size: .88rem; }
 
     /* ---- Tooltip ---- */
@@ -178,6 +193,11 @@
     <section>
       <div class="sec-head"><h2>📋 Antrian aktif</h2><span class="hint">urut deadline</span></div>
       <div id="queue"></div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>🗂 Riwayat</h2><span class="hint">selesai · ditolak · dibatalkan — 20 terakhir</span></div>
+      <div id="history"></div>
     </section>
 
     <footer>JuruJahit — Terima. Oper. Tolak. Dengan hitungan, bukan perasaan.</footer>
@@ -270,6 +290,43 @@
         <span class="badge ${cls}">${txt}</span>
       </div>`;
     }).join("");
+  }
+
+  function renderHistory(orders) {
+    const el = document.getElementById("history");
+    const HIST = { done: ["ok", "✓ selesai"], rejected: ["bad", "✗ ditolak"], cancelled: ["wait", "— batal"] };
+    const rows = orders
+      .filter(o => o.status in HIST)
+      .sort((a,b) => {
+        const ka = a.completed_at || a.decided_at || a.created_at || "";
+        const kb = b.completed_at || b.decided_at || b.created_at || "";
+        return ka < kb ? 1 : -1;
+      })
+      .slice(0, 20);
+    if (!rows.length) {
+      el.innerHTML = `<div class="empty">Belum ada riwayat — order selesai/ditolak akan tercatat di sini.</div>`;
+      return;
+    }
+    const html = rows.map(o => {
+      const [cls, txt] = HIST[o.status];
+      const ts = (o.completed_at || o.decided_at || o.created_at || "").slice(0,10);
+      const val = orderValue(o);
+      return `<div class="h-row ${o.status==='cancelled'?'dim':''}">
+        <span class="badge ${cls}">${txt}</span>
+        <span class="h-name">${o.quantity}× ${esc(o.item_label)}</span>
+        <span class="h-val">${val>0 ? rupiah(val) : ""}</span>
+        <span class="h-date">${ts ? fmt(ts) : "—"}</span>
+      </div>`;
+    }).join("");
+
+    const doneN = rows.filter(o=>o.status==="done").length;
+    const rej = orders.filter(o=>o.status==="rejected");
+    const rejTotal = rej.reduce((s,o)=> s + orderValue(o), 0);
+    el.innerHTML = `<div class="h-card">${html}</div>
+      <div class="h-sum">
+        <span>✓ Selesai: <b>${doneN}</b></span>
+        <span>✗ Ditolak: <b>${rej.length}</b> order senilai <b>${rupiah(rejTotal)}</b></span>
+      </div>`;
   }
 
   // ---- Kalender + tooltip ----
@@ -374,6 +431,7 @@
       renderMetrics(orders, monthRef);
       renderCalendar(orders, Number(t?.work_hours_per_day) || 8, Number(t?.work_days_per_week) || 6);
       renderQueue(orders);
+      renderHistory(orders);
     } catch (e) {
       document.getElementById("alert").innerHTML = `<div class="err">Gagal memuat data: ${esc(e.message)}</div>`;
     }
