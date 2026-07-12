@@ -94,7 +94,8 @@ function renderOutsource(v: VerdictData): string {
   if (m.verdict === 'data_kurang') {
     return (
       '🅱 OPER ke rekan — data upah/harga belum lengkap\n' +
-      `   → butuh: ${m.missing.join(', ')}. [Draft chat ke rekan]`
+      `   → butuh: ${m.missing.join(', ')}.\n` +
+      `   → isi sekali saja: /profil harga ${v.itemLabel} jual 500rb upah 150rb`
     );
   }
   const upahPer =

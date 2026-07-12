@@ -104,18 +104,53 @@ async function stepItems(ctx: Context, w: WizardState, text: string): Promise<bo
     );
     return true;
   }
-  const d: DraftItemType = { name: item.name, hours_per_unit: item.hoursPerUnit };
-  w.pendingItems.push(d);
+  const d: DraftItemType = {
+    name: item.name,
+    hours_per_unit: item.hoursPerUnit,
+    base_price: item.basePrice ?? null,
+    outsource_cost: item.outsourceCost ?? null,
+  };
+  // Kirim ulang jenis yang sama (mis. untuk melengkapi harga) → timpa draft,
+  // jangan bikin baris kembar.
+  const dupIdx = w.pendingItems.findIndex(
+    (p) => p.name.toLowerCase() === d.name.toLowerCase(),
+  );
+  if (dupIdx >= 0) w.pendingItems[dupIdx] = d;
+  else w.pendingItems.push(d);
   setWizard(ctx.chat!.id, w);
   const jamHari =
     item.hoursPerUnit >= (w.workHoursPerDay ?? 8)
       ? `≈ ${round1(item.hoursPerUnit / (w.workHoursPerDay ?? 8))} hari`
       : `${item.hoursPerUnit} jam`;
+
+  const detail = [`${d.hours_per_unit} jam/pcs (${jamHari})`];
+  if (d.base_price != null) detail.push(`jual ${rupiah(d.base_price)}/pcs`);
+  if (d.outsource_cost != null) detail.push(`upah oper ${rupiah(d.outsource_cost)}/pcs`);
+
+  // Tanpa harga, opsi OPER tak bisa menghitung margin — beri tahu di tempat,
+  // jangan biarkan penjahit baru sadar saat order pertama masuk.
+  const nudge =
+    d.base_price == null || d.outsource_cost == null
+      ? '\n\n💡 Harga belum lengkap — nanti opsi *OPER* tak bisa hitung margin.\n' +
+        `Kirim ulang lengkap begini: _${d.name} ${fmtDur(d.hours_per_unit, w.workHoursPerDay ?? 8)}, jual 500rb, upah rekan 150rb_\n` +
+        '(atau lanjut saja, bisa diisi nanti lewat /profil)'
+      : '';
+
   await ctx.reply(
-    `✅ Dicatat: *${d.name}* — ${d.hours_per_unit} jam/pcs (${jamHari}).\n\n${M.askItemMore}`,
+    `✅ Dicatat: *${d.name}* — ${detail.join(' · ')}.${nudge}\n\n${M.askItemMore}`,
     MD,
   );
   return true;
+}
+
+function fmtDur(hours: number, hoursPerDay: number): string {
+  return hours >= hoursPerDay
+    ? `${round1(hours / hoursPerDay)} hari`
+    : `${hours} jam`;
+}
+
+function rupiah(n: number): string {
+  return 'Rp' + Math.round(n).toLocaleString('id-ID');
 }
 
 async function stepPartners(ctx: Context, w: WizardState, text: string): Promise<boolean> {
@@ -171,12 +206,19 @@ async function finishWizard(ctx: Context, w: WizardState): Promise<void> {
       (c) => c.name.toLowerCase() === it.name.toLowerCase(),
     );
     if (match) {
-      await updateItemType(match.id, { hours_per_unit: it.hours_per_unit });
+      // Harga yang tak disebut ulang: pertahankan yang lama, jangan dinolkan.
+      await updateItemType(match.id, {
+        hours_per_unit: it.hours_per_unit,
+        ...(it.base_price != null ? { base_price: it.base_price } : {}),
+        ...(it.outsource_cost != null ? { outsource_cost: it.outsource_cost } : {}),
+      });
     } else {
       await addItemType({
         tailor_id: tailorId,
         name: it.name,
         hours_per_unit: it.hours_per_unit,
+        base_price: it.base_price ?? null,
+        outsource_cost: it.outsource_cost ?? null,
       });
     }
   }

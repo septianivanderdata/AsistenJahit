@@ -13,15 +13,17 @@ Kamu tidak perlu instal apa-apa. Cukup punya Telegram.
 3. Bot akan tanya beberapa hal, jawab santai saja:
    - **Nama & nama usaha** — contoh: `Bu Sri — Sri Jahit Modern`
    - **Jadwal kerja** — contoh: `6 hari, 8 jam`
-   - **Jenis jahitan + lamanya** — kirim satu-satu, contoh:
-     - `kebaya payet 3 hari`
-     - `celana sekolah 4 jam`
-     - `seragam kantor 6 jam`
+   - **Jenis jahitan + lamanya + harga** — kirim satu-satu, contoh:
+     - `kebaya payet 3 hari, jual 500rb, upah rekan 150rb`
+     - `celana sekolah 4 jam, jual 80rb, upah 30rb`
+     - `seragam kantor 6 jam, jual 150rb, upah 50rb`
      
      Kalau sudah semua, ketik `selesai`.
    - **Rekan penjahit** (boleh dilewati) — contoh: `Wati — kebaya 150rb`, atau ketik `lewati`.
 
 Selesai. Setup ini cuma sekali.
+
+> 💰 **Isi harganya.** `jual` = harga yang kamu tarik ke pelanggan per pcs. `upah` = yang kamu bayar ke rekan kalau order dioper. Tanpa dua angka ini, bot **tidak bisa menghitung margin oper** — opsi 🅱 jadi kosong, dan dashboard tak bisa menunjukkan nilai order yang kamu tolak. Boleh dilewati dulu, isi belakangan lewat `/profil harga kebaya jual 500rb upah 150rb`.
 
 > 💡 Makin jujur angka lamanya, makin akurat saran bot. Tapi tidak usah pusing — bot **belajar sendiri**: tiap order selesai, perkiraannya dikoreksi otomatis.
 
@@ -61,7 +63,7 @@ Kalau bot kurang yakin (jenis tak dikenal / deadline tidak disebut), dia tanya *
 | `/edit` | Ubah order aktif: percepat/geser tanggal selesai, ubah deadline, atau batalkan |
 | `/riwayat` | Lihat order yang sudah selesai, ditolak, atau dibatalkan |
 | `/libur` | Catat hari libur/cuti — contoh: `/libur 17 agustus` (jadwal otomatis melewatinya) |
-| `/profil` | Lihat jenis jahitan & durasi. Tambah: `/profil tambah gamis 5 jam` · ubah: `/profil ubah kebaya 2 hari` |
+| `/profil` | Lihat jenis jahitan, durasi & harga. Tambah: `/profil tambah gamis 5 jam, jual 300rb, upah 90rb` · ubah durasi: `/profil ubah kebaya 2 hari` · ubah harga: `/profil harga kebaya jual 500rb upah 150rb` |
 | `/dashboard` | Minta link dashboard pribadimu (lihat bagian 4) |
 
 **Penting: rajin tekan `/selesai` begitu order rampung.** Ini yang membebaskan jadwalmu — kalau lupa, bot mengira kamu masih penuh dan menyuruh tolak order yang sebenarnya masih muat.

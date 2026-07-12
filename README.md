@@ -17,7 +17,7 @@ npm run dev               # start bot (long polling)
 Test mesin kapasitas (wajib hijau sebelum dipakai):
 
 ```bash
-npm test          # 44 test: penjadwalan packing per-jam, libur, deadline, margin, learning
+npm test          # 58 test: penjadwalan packing per-jam, libur, deadline, margin, learning, parser harga
 npm run typecheck
 ```
 
@@ -51,7 +51,7 @@ index.html?url=<SUPABASE_URL>&key=<ANON_KEY>&tailor=<TAILOR_UUID>
 
 ## Status milestone (§11)
 
-- **M0–M2** ✅ fondasi, skema, wizard, **mesin kapasitas + 44 unit test hijau**
+- **M0–M2** ✅ fondasi, skema, wizard, **mesin kapasitas + 58 unit test hijau**
 - **M3–M5** ✅ ekstraksi + klarifikasi 1×, vonis 3 opsi + draft + update antrian, `/antrian` `/selesai` `/profil` (+ `/edit` `/riwayat` `/libur` `/dashboard`)
 - **M6** ✅ dashboard live + seed demo (kalender, antrian, metrik, riwayat)
 - **M7** deploy + uji penjahit asli + video — perlu kredensial nyata
@@ -60,7 +60,7 @@ index.html?url=<SUPABASE_URL>&key=<ANON_KEY>&tailor=<TAILOR_UUID>
 
 - **LLM Google Gemini (free tier)** menggantikan Claude API — model default `gemini-2.5-flash`, env-configurable (`GEMINI_MODEL`). "Thinking" dimatikan (`thinkingBudget: 0`) agar cepat & hemat kuota. Prompt di `src/prompts/` tak berubah; hanya `src/llm/client.ts` yang menyentuh SDK.
 - **Dashboard tanpa Chart.js**: kalender heatmap & metrik pakai CSS grid murni → self-contained, nol dependensi eksternal, sejalan "tanpa framework berat" + "ramah koneksi terbatas".
-- **Harga jual order**: skema ekstraksi §8.1 tak menangkap harga dari chat pelanggan, jadi `quoted_price` order riil = null; margin oper memakai `base_price`/`outsource_cost` dari profil item. Seed mengisi `quoted_price` agar metrik dashboard "hidup".
+- **Harga jual & upah oper ditanya saat setup** (`kebaya payet 3 hari, jual 500rb, upah rekan 150rb`) dan bisa diubah kapan saja: `/profil harga <jenis> jual 500rb upah 150rb`. Parser rupiah deterministik (`parseRupiah`/`extractPrices` di `src/util/parse.ts`, 14 test) — mengerti `500rb`, `1,5jt`, `500.000`, `Rp350rb`. Tanpa data ini opsi OPER jatuh ke `data_kurang` dan metrik dashboard bernilai 0, jadi bot mengingatkan di tempat. `quoted_price` per order tetap diambil dari chat pelanggan bila disebut (menimpa `base_price`).
 - **State wizard/klarifikasi** dipersist ke `.data/sessions.json` (atomic write) — selamat dari restart/redeploy; single-process long-polling.
 - **Penjadwalan packing per-jam** (melampaui FCFS harian §7): order kecil berbagi hari, order baru mengisi sisa jam & celah kapasitas. Lima order 2 jam = 1 hari, bukan 5.
 - **Belajar dari realita** (`src/core/learning.ts`): saat `/selesai`, selisih tanggal selesai asli vs estimasi mengoreksi `hours_per_unit` (pemulusan 70/30, clamp anti-outlier, perubahan <5% diabaikan). Bot melaporkan tiap penyesuaian.

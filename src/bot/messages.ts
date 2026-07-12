@@ -11,8 +11,12 @@ export const M = {
     'Oke! Sekarang, *berapa hari kamu kerja per minggu, dan berapa jam per hari?*\n' +
     'Contoh: _6 hari, 8 jam_',
   askItems:
-    'Mantap. Sekarang sebutkan *jenis jahitan yang biasa kamu terima + berapa lama pengerjaannya*.\n' +
-    'Contoh: _kebaya payet 3 hari_ atau _celana sekolah 4 jam_\n\n' +
+    'Mantap. Sekarang sebutkan *jenis jahitan yang biasa kamu terima, berapa lama pengerjaannya, ' +
+    'harga jualmu, dan upah kalau dioper ke rekan*.\n' +
+    'Contoh: _kebaya payet 3 hari, jual 500rb, upah rekan 150rb_\n' +
+    'Atau: _celana sekolah 4 jam, jual 80rb, upah 30rb_\n\n' +
+    'Harga boleh dilewati (_kebaya payet 3 hari_ saja) — tapi tanpa harga, ' +
+    'aku tak bisa hitung *margin oper*. Bisa diisi nanti lewat /profil.\n\n' +
     'Kirim satu-satu. Ketik *selesai* kalau sudah.',
   askItemMore: 'Tambah lagi? Kirim jenis berikutnya, atau ketik *selesai*.',
   askPartners:

@@ -16,6 +16,8 @@ export type WizardStep =
 export interface DraftItemType {
   name: string;
   hours_per_unit: number;
+  base_price?: number | null; // harga jual per pcs (opsional saat setup)
+  outsource_cost?: number | null; // upah oper ke rekan per pcs (opsional)
 }
 
 export interface WizardState {
