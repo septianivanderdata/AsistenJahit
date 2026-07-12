@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JuruJahit — Dashboard</title>
+  <style>
+    :root {
+      /* Ramp emas sekuensial — tervalidasi (ordinal, surface #faf7f0):
+         monotone L, gap ΔL ≥.06, ujung terang 2.27:1 */
+      --seq-1: #c9a13d;
+      --seq-2: #b0861c;
+      --seq-3: #96700e;
+      --seq-4: #7a5a08;
+      --seq-5: #5e4405;
+      --emas: #96700e;
+      --emas-line: #d9c07a;
+
+      --ink: #221d15;
+      --ink-2: #5c554a;
+      --muted: #8a8378;
+      --bg: #faf7f0;
+      --card: #ffffff;
+      --line: #e9e1d2;
+
+      --ok-ink: #1a7f37;   --ok-bg: #e6f4ea;   --ok-line: #b7e0c2;
+      --warn-ink: #9a5b00; --warn-bg: #fdf3e1; --warn-line: #ecd3a2;
+      --bad-ink: #b42318;  --bad-bg: #fdeeec;  --bad-line: #f0c4bf;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      background: var(--bg); color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5; font-size: 15px;
+    }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 18px 56px; }
+
+    /* ---- Header ---- */
+    .topbar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 18px 0 16px; border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+    .logo {
+      width: 42px; height: 42px; border-radius: 12px; flex: none;
+      background: linear-gradient(135deg, var(--seq-2), var(--seq-4));
+      display: grid; place-items: center; font-size: 1.25rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+    }
+    .who { min-width: 0; }
+    .who h1 { font-size: 1.12rem; letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .who .sub { color: var(--muted); font-size: .8rem; }
+    .chip {
+      margin-left: auto; font-size: .8rem; font-weight: 600;
+      background: var(--card); border: 1px solid var(--emas-line);
+      color: var(--emas); border-radius: 999px; padding: 6px 14px;
+      white-space: nowrap;
+    }
+
+    /* ---- Stat tiles ---- */
+    .tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin: 20px 0 8px; }
+    .tile {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 16px 18px 14px;
+    }
+    .tile .label {
+      font-size: .7rem; font-weight: 600; color: var(--ink-2);
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+    .tile .val {
+      font-size: 1.5rem; font-weight: 700; margin-top: 6px;
+      font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+    }
+    .tile .cap { font-size: .76rem; color: var(--muted); margin-top: 2px; }
+    .tile.star { border-left: 4px solid var(--seq-2); }
+    .tile.star .val { color: var(--emas); }
+
+    /* ---- Sections ---- */
+    section { margin-top: 30px; }
+    .sec-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+    .sec-head h2 { font-size: .95rem; letter-spacing: -.01em; }
+    .sec-head .hint { font-size: .76rem; color: var(--muted); }
+
+    /* ---- Kalender ---- */
+    .cal-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+    .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal .dow {
+      font-size: .66rem; font-weight: 600; color: var(--muted); text-align: center;
+      text-transform: uppercase; letter-spacing: .06em; padding-bottom: 4px;
+    }
+    .cal .day {
+      aspect-ratio: 1; border-radius: 7px; position: relative;
+      background: var(--bg); border: 1px solid transparent;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 3px 4px; font-size: .68rem; cursor: default;
+    }
+    .cal .day:hover { border-color: var(--ink-2); }
+    .cal .day .n { color: var(--muted); font-variant-numeric: tabular-nums; }
+    .cal .day .mon { position: absolute; top: 3px; right: 4px; font-size: .58rem; font-weight: 700; color: var(--ink-2); text-transform: uppercase; }
+    .cal .day.off { background: repeating-linear-gradient(135deg, transparent 0 3px, rgba(0,0,0,.045) 3px 6px); }
+    .cal .day.today { border-color: var(--emas); box-shadow: 0 0 0 1px var(--emas); }
+    .cal .day .load {
+      font-size: .62rem; font-weight: 700; text-align: center;
+      border-radius: 4px; padding: 1px 0; font-variant-numeric: tabular-nums;
+    }
+    .legend { display: flex; align-items: center; gap: 5px; margin-top: 12px; font-size: .7rem; color: var(--muted); }
+    .legend .sw { width: 22px; height: 10px; border-radius: 3px; }
+
+    /* ---- Antrian ---- */
+    .q {
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+      padding: 12px 16px; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .qty {
+      flex: none; min-width: 40px; height: 40px; border-radius: 10px; padding: 0 6px;
+      background: var(--bg); border: 1px solid var(--line);
+      display: grid; place-items: center;
+      font-weight: 700; font-size: .82rem; font-variant-numeric: tabular-nums;
+    }
+    .q .body { min-width: 0; flex: 1; }
+    .q .name { font-weight: 600; font-size: .92rem; }
+    .q .meta { color: var(--muted); font-size: .78rem; margin-top: 1px; }
+    .badge {
+      flex: none; font-size: .7rem; font-weight: 600; padding: 3px 10px;
+      border-radius: 999px; border: 1px solid; white-space: nowrap;
+    }
+    .badge.ok   { color: var(--ok-ink);   background: var(--ok-bg);   border-color: var(--ok-line); }
+    .badge.warn { color: var(--warn-ink); background: var(--warn-bg); border-color: var(--warn-line); }
+    .badge.bad  { color: var(--bad-ink);  background: var(--bad-bg);  border-color: var(--bad-line); }
+    .badge.wait { color: var(--ink-2);    background: var(--bg);      border-color: var(--line); }
+
+    .empty { color: var(--muted); font-size: .88rem; padding: 18px; text-align: center; background: var(--card); border: 1px dashed var(--line); border-radius: 12px; }
+
+    /* ---- Riwayat ---- */
+    .h-card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    .h-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 16px; border-bottom: 1px solid var(--line);
+      font-size: .86rem;
+    }
+    .h-row:last-child { border-bottom: none; }
+    .h-row .h-name { font-weight: 600; min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .h-row .h-date { color: var(--muted); font-size: .78rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .h-row .h-val { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: .82rem; }
+    .h-row.dim .h-name, .h-row.dim .h-val { color: var(--muted); font-weight: 500; }
+    .h-sum { display: flex; gap: 14px; flex-wrap: wrap; font-size: .76rem; color: var(--muted); margin-top: 10px; }
+    .h-sum b { color: var(--ink); font-variant-numeric: tabular-nums; }
+    .err { background: var(--bad-bg); border: 1px solid var(--bad-line); color: var(--bad-ink); padding: 12px 14px; border-radius: 10px; margin-top: 16px; font-size: .88rem; }
+
+    /* ---- Tooltip ---- */
+    #tip {
+      position: fixed; z-index: 10; pointer-events: none; display: none;
+      background: var(--ink); color: #fff; font-size: .74rem;
+      padding: 6px 10px; border-radius: 8px; max-width: 240px;
+      box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    }
+    #tip .t-date { font-weight: 700; }
+    #tip .t-sub { opacity: .8; }
+
+    footer { color: var(--muted); font-size: .74rem; margin-top: 40px; text-align: center; }
+
+    @media (max-width: 480px) {
+      .chip { margin-left: 54px; }
+      .tile .val { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="logo">🧵</div>
+      <div class="who">
+        <h1 id="biz">JuruJahit</h1>
+        <div class="sub">Dashboard kapasitas &amp; antrian</div>
+      </div>
+      <div class="chip" id="filled">memuat…</div>
+    </header>
+
+    <div id="alert"></div>
+
+    <div class="tiles" id="metrics"></div>
+
+    <section>
+      <div class="sec-head"><h2>🗓 Kalender kapasitas</h2><span class="hint">6 minggu ke depan · arahkan kursor untuk detail</span></div>
+      <div class="cal-card">
+        <div class="cal" id="calendar"></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>📋 Antrian aktif</h2><span class="hint">urut deadline</span></div>
+      <div id="queue"></div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2>🗂 Riwayat</h2><span class="hint">selesai · ditolak · dibatalkan — 20 terakhir</span></div>
+      <div id="history"></div>
+    </section>
+
+    <footer>JuruJahit — Terima. Oper. Tolak. Dengan hitungan, bukan perasaan.</footer>
+  </div>
+  <div id="tip"></div>
+
+  <script>
+  // ---- Konfigurasi ----
+  // Isi placeholder ini saat deploy, ATAU override via query param:
+  //   ?url=...&key=<anon>&tailor=<uuid>
+  const CONFIG = {
+    url: "https://nonrsowesybfyckfecwy.supabase.co",
+    anonKey: "sb_publishable_bG-8t_7L-ahGMv1ZzLOhMw_o-IR748i",
+    tailorId: "__TAILOR_ID__",
+  };
+  const qs = new URLSearchParams(location.search);
+  const URL_ = qs.get("url") || CONFIG.url;
+  const KEY = qs.get("key") || CONFIG.anonKey;
+  const TAILOR = qs.get("tailor") || CONFIG.tailorId;
+
+  const BULAN = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  const DOW = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+  // Ramp emas tervalidasi (terang → gelap)
+  const RAMP = ["#c9a13d","#b0861c","#96700e","#7a5a08","#5e4405"];
+  const rupiah = (n) => "Rp" + Math.round(n||0).toLocaleString("id-ID");
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  async function rest(path) {
+    const res = await fetch(`${URL_}/rest/v1/${path}`, {
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
+    });
+    if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+    return res.json();
+  }
+
+  // Nilai order: harga dari chat, else snapshot hitungan vonis (paritas dgn bot).
+  function orderValue(o) {
+    if (Number(o.quoted_price) > 0) return Number(o.quoted_price);
+    const sell = o.verdict?.margin?.sellTotal;
+    return Number(sell) > 0 ? Number(sell) : 0;
+  }
+
+  function badgeFor(o) {
+    if (!o.deadline || !o.finish_date) return ["wait", "menunggu"];
+    if (o.finish_date < o.deadline) return ["ok", "✓ aman"];
+    if (o.finish_date === o.deadline) return ["warn", "⚠ mepet"];
+    return ["bad", "✗ telat"];
+  }
+
+  function isSameMonth(d, ref) { return d && d.slice(0,7) === ref; }
+  function fmt(iso) { const [y,m,d]=iso.split("-"); return `${+d} ${BULAN[+m-1]}`; }
+
+  function renderMetrics(orders, monthRef) {
+    const inMonth = (o) => isSameMonth(o.decided_at || o.created_at, monthRef);
+    const acc = orders.filter(o => o.status === "accepted" || o.status === "done");
+    const out = orders.filter(o => o.status === "outsourced");
+    const rej = orders.filter(o => o.status === "rejected" && inMonth(o));
+    const val = (arr) => arr.reduce((s,o)=> s + orderValue(o), 0);
+    const marginOper = out.reduce((s,o)=> s + (orderValue(o) - (Number(o.outsource_cost)||0)*o.quantity), 0);
+    const tiles = [
+      { label: "Order berjalan", val: rupiah(val(acc.filter(o=>o.status==="accepted"))), cap: `${acc.filter(o=>o.status==="accepted").length} order dikerjakan` },
+      { label: "Dioper — margin", val: rupiah(marginOper), cap: `${out.length} order di rekan` },
+      { label: "Ditolak bulan ini", val: rupiah(val(rej)), cap: `${rej.length} order — sinyal naik kelas`, star: true },
+    ];
+    document.getElementById("metrics").innerHTML = tiles.map(t =>
+      `<div class="tile ${t.star?'star':''}">
+        <div class="label">${t.label}</div>
+        <div class="val">${t.val}</div>
+        <div class="cap">${t.cap}</div>
+      </div>`
+    ).join("");
+  }
+
+  function renderQueue(orders) {
+    const active = orders.filter(o => o.status === "accepted" || o.status === "outsourced")
+      .sort((a,b)=> (a.deadline||"9999") < (b.deadline||"9999") ? -1 : 1);
+    const el = document.getElementById("queue");
+    if (!active.length) { el.innerHTML = `<div class="empty">Belum ada order aktif — antrian kosong 🎉</div>`; return; }
+    el.innerHTML = active.map(o => {
+      const [cls, txt] = badgeFor(o);
+      const dl = o.deadline ? fmt(o.deadline) : "—";
+      const fin = o.finish_date ? fmt(o.finish_date) : "—";
+      const st = o.status === "outsourced" ? "🤝 di rekan" : "🟢 dikerjakan";
+      return `<div class="q">
+        <div class="qty">${o.quantity}×</div>
+        <div class="body">
+          <div class="name">${esc(o.item_label)}</div>
+          <div class="meta">deadline ${dl} · estimasi selesai ${fin} · ${st}</div>
+        </div>
+        <span class="badge ${cls}">${txt}</span>
+      </div>`;
+    }).join("");
+  }
+
+  function renderHistory(orders) {
+    const el = document.getElementById("history");
+    const HIST = { done: ["ok", "✓ selesai"], rejected: ["bad", "✗ ditolak"], cancelled: ["wait", "— batal"] };
+    const rows = orders
+      .filter(o => o.status in HIST)
+      .sort((a,b) => {
+        const ka = a.completed_at || a.decided_at || a.created_at || "";
+        const kb = b.completed_at || b.decided_at || b.created_at || "";
+        return ka < kb ? 1 : -1;
+      })
+      .slice(0, 20);
+    if (!rows.length) {
+      el.innerHTML = `<div class="empty">Belum ada riwayat — order selesai/ditolak akan tercatat di sini.</div>`;
+      return;
+    }
+    const html = rows.map(o => {
+      const [cls, txt] = HIST[o.status];
+      const ts = (o.completed_at || o.decided_at || o.created_at || "").slice(0,10);
+      const val = orderValue(o);
+      return `<div class="h-row ${o.status==='cancelled'?'dim':''}">
+        <span class="badge ${cls}">${txt}</span>
+        <span class="h-name">${o.quantity}× ${esc(o.item_label)}</span>
+        <span class="h-val">${val>0 ? rupiah(val) : ""}</span>
+        <span class="h-date">${ts ? fmt(ts) : "—"}</span>
+      </div>`;
+    }).join("");
+
+    const doneN = rows.filter(o=>o.status==="done").length;
+    const rej = orders.filter(o=>o.status==="rejected");
+    const rejTotal = rej.reduce((s,o)=> s + orderValue(o), 0);
+    el.innerHTML = `<div class="h-card">${html}</div>
+      <div class="h-sum">
+        <span>✓ Selesai: <b>${doneN}</b></span>
+        <span>✗ Ditolak: <b>${rej.length}</b> order senilai <b>${rupiah(rejTotal)}</b></span>
+      </div>`;
+  }
+
+  // ---- Kalender + tooltip ----
+  const tip = document.getElementById("tip");
+  function showTip(e, html) {
+    tip.innerHTML = html;
+    tip.style.display = "block";
+    const pad = 12;
+    let x = e.clientX + pad, y = e.clientY + pad;
+    const r = tip.getBoundingClientRect();
+    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - pad;
+    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - pad;
+    tip.style.left = x + "px"; tip.style.top = y + "px";
+  }
+  function hideTip() { tip.style.display = "none"; }
+
+  function renderCalendar(orders, workHours, workDays) {
+    // Hari libur mingguan dihitung dari belakang pekan (paritas dgn bot):
+    // 6 hari kerja → Minggu; 5 → Sabtu+Minggu; dst.
+    const OFF_ORDER = [0, 6, 5, 4, 3, 2, 1];
+    const offDows = new Set(OFF_ORDER.slice(0, Math.max(0, 7 - (workDays || 6))));
+    const isOffDay = (iso) => offDows.has(new Date(iso + "T00:00:00Z").getUTCDay());
+
+    // Sebar est_hours tiap order accepted merata di HARI KERJA rentang
+    // start..finish; catat label order per hari untuk tooltip.
+    const load = {}, what = {};
+    for (const o of orders.filter(x=>x.status==="accepted" && x.start_date && x.finish_date)) {
+      const days = daysBetween(o.start_date, o.finish_date).filter(d => !isOffDay(d));
+      if (!days.length) continue;
+      const per = (Number(o.est_hours)||0) / days.length;
+      for (const d of days) {
+        load[d] = (load[d]||0) + per;
+        (what[d] ??= []).push(`${o.quantity}× ${o.item_label}`);
+      }
+    }
+    const cap = Math.max(workHours || 8, ...Object.values(load));
+    const today = new Date();
+    const start = new Date(today); start.setDate(today.getDate() - today.getDay());
+    const todayISO = today.toISOString().slice(0,10);
+    const cal = document.getElementById("calendar");
+    let html = DOW.map(d=>`<div class="dow">${d}</div>`).join("");
+    const cells = [];
+    for (let i=0;i<42;i++){
+      const dt = new Date(start); dt.setDate(start.getDate()+i);
+      const iso = dt.toISOString().slice(0,10);
+      const isOff = offDows.has(dt.getDay());
+      const l = load[iso]||0;
+      // bin 0..5 → ramp; teks putih mulai bin 3
+      const bin = l <= 0 ? 0 : Math.min(5, Math.ceil((l / cap) * 5));
+      const bg = bin ? RAMP[bin-1] : "";
+      const fg = bin >= 3 ? "#fff" : "#221d15";
+      const loadTag = l>0 ? `<div class="load" style="background:${bg};color:${fg}">${l.toFixed(0)}j</div>` : "";
+      const monTag = dt.getDate()===1 ? `<span class="mon">${BULAN[dt.getMonth()]}</span>` : "";
+      html += `<div class="day ${isOff?'off':''} ${iso===todayISO?'today':''}" data-i="${i}">
+        <span class="n">${dt.getDate()}</span>${monTag}${loadTag}</div>`;
+      cells.push({ iso, l, items: what[iso] ?? [], isOff });
+    }
+    cal.innerHTML = html;
+
+    cal.querySelectorAll(".day").forEach(el => {
+      const c = cells[Number(el.dataset.i)];
+      const move = (e) => {
+        const items = c.items.length ? `<div class="t-sub">${c.items.map(esc).join("<br>")}</div>` : "";
+        const stat = c.isOff ? "Hari libur" : c.l > 0 ? `${c.l.toFixed(1)} jam terisi` : "Kosong";
+        showTip(e, `<div class="t-date">${fmt(c.iso)}</div><div>${stat}</div>${items}`);
+      };
+      el.addEventListener("mousemove", move);
+      el.addEventListener("mouseleave", hideTip);
+    });
+
+    document.getElementById("legend").innerHTML =
+      `<span>Kosong</span>` +
+      RAMP.map(c=>`<span class="sw" style="background:${c}"></span>`).join("") +
+      `<span>Penuh (${Math.round(cap)}j/hari)</span>`;
+  }
+
+  function daysBetween(a,b){ const out=[]; let d=new Date(a); const end=new Date(b);
+    while(d<=end){ out.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1);} return out.length?out:[a]; }
+
+  async function main() {
+    if (!URL_ || URL_.startsWith("__") || !TAILOR || TAILOR.startsWith("__")) {
+      document.getElementById("alert").innerHTML =
+        `<div class="err">Belum dikonfigurasi. Buka lewat perintah <b>/dashboard</b> di bot Telegram, atau tambahkan <code>?url=…&key=…&tailor=…</code>.</div>`;
+      document.getElementById("filled").textContent = "—";
+      return;
+    }
+    try {
+      const [tailors, orders] = await Promise.all([
+        rest(`tailors?id=eq.${TAILOR}&select=*`),
+        rest(`orders?tailor_id=eq.${TAILOR}&select=*`),
+      ]);
+      const t = tailors[0];
+      if (t) document.getElementById("biz").textContent = t.business_name || t.name || "JuruJahit";
+
+      const monthRef = new Date().toISOString().slice(0,7);
+      const accepted = orders.filter(o=>o.status==="accepted" && o.finish_date);
+      const filled = accepted.reduce((m,o)=> o.finish_date>m?o.finish_date:m, "");
+      document.getElementById("filled").textContent = filled
+        ? `Terisi s.d. ${fmt(filled)}`
+        : "Antrian kosong 🎉";
+
+      renderMetrics(orders, monthRef);
+      renderCalendar(orders, Number(t?.work_hours_per_day) || 8, Number(t?.work_days_per_week) || 6);
+      renderQueue(orders);
+      renderHistory(orders);
+    } catch (e) {
+      document.getElementById("alert").innerHTML = `<div class="err">Gagal memuat data: ${esc(e.message)}</div>`;
+    }
+  }
+  main();
+  </script>
+</body>
+</html>

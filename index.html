@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JuruJahit — Terima. Oper. Tolak. Dengan hitungan, bukan perasaan.</title>
+<meta name="description" content="Asisten AI di Telegram untuk penjahit: forward chat pelanggan, dapat vonis TERIMA / OPER / TOLAK berdasarkan kapasitas antrian riil.">
+<style>
+  :root {
+    --emas: #b8860b;
+    --emas-tua: #8a6508;
+    --tinta: #2b2419;
+    --kertas: #faf6ef;
+    --kartu: #ffffff;
+    --garis: #e8e0d0;
+    --redup: #7a6f5c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--kertas);
+    color: var(--tinta);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+
+  header { padding: 14px 0; border-bottom: 1px solid var(--garis); }
+  .brand { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+  .brand .spool {
+    width: 36px; height: 36px; border-radius: 10px; flex: none;
+    background: linear-gradient(135deg, #b0861c, #7a5a08);
+    display: grid; place-items: center; font-size: 1.05rem;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.25);
+  }
+
+  .hero { padding: 64px 0 48px; text-align: center; }
+  .hero h1 {
+    font-size: clamp(1.7rem, 5vw, 2.6rem);
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+  }
+  .hero h1 em { font-style: normal; color: var(--emas-tua); }
+  .hero p.sub {
+    margin: 18px auto 0;
+    max-width: 560px;
+    font-size: 1.06rem;
+    color: var(--redup);
+  }
+  .cta {
+    display: inline-block;
+    margin-top: 30px;
+    background: var(--emas);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 14px 30px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+  }
+  .cta:hover { background: var(--emas-tua); }
+  .cta-sub { display: block; margin-top: 10px; font-size: 0.85rem; color: var(--redup); }
+
+  .verdict {
+    margin: 20px auto 0;
+    max-width: 480px;
+    text-align: left;
+    background: var(--kartu);
+    border: 1px solid var(--garis);
+    border-radius: 14px;
+    padding: 18px 20px;
+    font-size: 0.92rem;
+    box-shadow: 0 6px 24px rgba(43,36,25,0.06);
+  }
+  .verdict .row { padding: 6px 0; border-bottom: 1px dashed var(--garis); }
+  .verdict .row:last-child { border-bottom: none; }
+  .verdict b { color: var(--emas-tua); }
+
+  section { padding: 44px 0; border-top: 1px solid var(--garis); }
+  h2 { font-size: 1.4rem; margin-bottom: 22px; letter-spacing: -0.01em; }
+
+  .steps { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .step {
+    background: var(--kartu);
+    border: 1px solid var(--garis);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .step .n {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--emas); color: #fff; font-weight: 700; font-size: 0.9rem;
+    margin-bottom: 12px;
+  }
+  .step h3 { font-size: 1.02rem; margin-bottom: 6px; }
+  .step p { font-size: 0.92rem; color: var(--redup); }
+
+  .why { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .why div {
+    padding: 16px 18px;
+    background: var(--kartu);
+    border-left: 3px solid var(--emas);
+    border-radius: 0 10px 10px 0;
+    border-top: 1px solid var(--garis);
+    border-right: 1px solid var(--garis);
+    border-bottom: 1px solid var(--garis);
+    font-size: 0.94rem;
+  }
+  .why b { display: block; margin-bottom: 4px; }
+
+  .demo-link { color: var(--emas-tua); font-weight: 600; }
+
+  footer {
+    padding: 34px 0 44px;
+    border-top: 1px solid var(--garis);
+    text-align: center;
+    color: var(--redup);
+    font-size: 0.9rem;
+  }
+  footer .tag { font-weight: 600; color: var(--tinta); margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap brand"><span class="spool">🧵</span>JuruJahit</div>
+</header>
+
+<main>
+  <div class="hero wrap">
+    <h1>Orderan masuk terus.<br>Tapi <em>sanggup nggak</em>, itu soal lain.</h1>
+    <p class="sub">
+      JuruJahit itu asisten AI di Telegram buat penjahit. Forward saja chat pelanggan —
+      dia hitung antrianmu, lalu kasih vonis: <strong>terima, oper ke rekan, atau tolak halus</strong>.
+    </p>
+
+    <a class="cta" href="https://t.me/Jasa_Jahit_bot">🧵 Buka Bot di Telegram</a>
+    <span class="cta-sub">Gratis · tanpa instal aplikasi · setup 5 menit</span>
+
+    <div class="verdict" aria-label="contoh vonis bot">
+      <div class="row">📋 <b>Order:</b> 20 pcs seragam kantor — deadline 15 Agu</div>
+      <div class="row">🗓 Antrianmu terisi s.d. 12 Agu</div>
+      <div class="row">🅰 <b>TERIMA</b> — realistis selesai 19 Agu ⚠️ lewat 4 hari → nego mundur</div>
+      <div class="row">🅱 <b>OPER</b> — upah ±Rp35rb/pcs, margin sisa ±Rp300rb (30%) ✅ layak</div>
+      <div class="row">🅲 <b>TOLAK HALUS</b> — draft chat sopan siap copy</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="wrap">
+      <h2>Cara pakainya — tiga langkah</h2>
+      <div class="steps">
+        <div class="step">
+          <span class="n">1</span>
+          <h3>Setup sekali</h3>
+          <p>Jawab beberapa pertanyaan bot: jenis jahitan yang biasa kamu terima dan berapa lama pengerjaannya. Lima menit, sekali seumur akun.</p>
+        </div>
+        <div class="step">
+          <span class="n">2</span>
+          <h3>Forward chat pelanggan</h3>
+          <p>Pelanggan tetap chat seperti biasa. Kamu cuma meneruskan chatnya ke bot — tanpa form, tanpa ketik ulang.</p>
+        </div>
+        <div class="step">
+          <span class="n">3</span>
+          <h3>Tap satu tombol</h3>
+          <p>Terima, oper, atau tolak — bot langsung siapkan draft balasan siap copy dan antrianmu terupdate otomatis.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Kenapa beda dari catatan di kepala</h2>
+      <div class="why">
+        <div><b>Angkanya tidak ngarang.</b> AI hanya membaca chat; semua hitungan kapasitas, tanggal, dan margin dikerjakan kalkulasi pasti.</div>
+        <div><b>Belajar dari kerjamu.</b> Tiap order selesai, perkiraan durasi dikoreksi otomatis — makin lama makin akurat.</div>
+        <div><b>Margin oper kelihatan.</b> Sebelum melempar order ke rekan, kamu tahu untung-ruginya dalam rupiah.</div>
+        <div><b>Order ditolak = sinyal.</b> Dashboard mencatat nilai order yang kamu tolak — bukti saatnya naikkan harga atau tambah orang.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>Dashboard pribadi</h2>
+      <p>
+        Ketik <strong>/dashboard</strong> di bot → dapat link pribadimu: kalender kapasitas,
+        antrian aktif, dan angka bulan berjalan. Tanpa login, tanpa password — akun Telegram-mu itulah kuncinya.
+      </p>
+      <p style="margin-top:10px">
+        Mau lihat dulu? <a class="demo-link" href="dashboard.html?tailor=a542c4be-422c-46a7-b2f0-b0b887282ef3">Buka dashboard demo →</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="tag">JuruJahit — Terima. Oper. Tolak. Dengan hitungan, bukan perasaan.</div>
+    <div>Dibangun untuk IDCamp Developer Challenge #2 · UMKM jahit Indonesia</div>
+  </div>
+</footer>
+
+</body>
+</html>
