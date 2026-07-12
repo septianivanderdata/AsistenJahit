@@ -17,7 +17,7 @@ npm run dev               # start bot (long polling)
 Test mesin kapasitas (wajib hijau sebelum dipakai):
 
 ```bash
-npm test          # 38 test: penjadwalan packing per-jam, libur, deadline, margin, learning
+npm test          # 44 test: penjadwalan packing per-jam, libur, deadline, margin, learning
 npm run typecheck
 ```
 
@@ -51,9 +51,9 @@ index.html?url=<SUPABASE_URL>&key=<ANON_KEY>&tailor=<TAILOR_UUID>
 
 ## Status milestone (§11)
 
-- **M0–M2** ✅ fondasi, skema, wizard, **mesin kapasitas + 38 unit test hijau**
-- **M3–M5** ✅ ekstraksi + klarifikasi 1×, vonis 3 opsi + draft + update antrian, `/antrian` `/selesai` `/profil`
-- **M6** ✅ dashboard live + seed demo
+- **M0–M2** ✅ fondasi, skema, wizard, **mesin kapasitas + 44 unit test hijau**
+- **M3–M5** ✅ ekstraksi + klarifikasi 1×, vonis 3 opsi + draft + update antrian, `/antrian` `/selesai` `/profil` (+ `/edit` `/riwayat` `/libur` `/dashboard`)
+- **M6** ✅ dashboard live + seed demo (kalender, antrian, metrik, riwayat)
 - **M7** deploy + uji penjahit asli + video — perlu kredensial nyata
 
 ## Catatan / deviasi terhadap spec
