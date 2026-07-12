@@ -74,11 +74,7 @@ Checklist operator (yang memasang):
 1. **Bot Telegram baru** — @BotFather → `/newbot` → token ke `TELEGRAM_BOT_TOKEN`. Jangan pakai token bersama; satu instance = satu bot.
 2. **Supabase baru** — buat project → SQL editor → paste `src/db/migrations.sql` → salin URL + service key + anon key ke `.env`.
 3. **Gemini API key** — gratis di https://aistudio.google.com/apikey (kuota free tier cukup untuk 1 penjahit).
-4. **Jalankan** — `npm install && npm test && npm run dev` (lokal) atau deploy ke Railway/Render (long polling, tanpa domain). Pastikan filesystem bisa tulis `.data/` (di Railway pakai volume, atau relakan state wizard hilang saat redeploy).
+4. **Jalankan** — `npm install && npm test && npm run dev` (lokal). Deploy bot: push repo ke GitHub → railway.app → New Project → Deploy from GitHub repo → isi semua env dari `.env` (start command otomatis `npm start`; `tsx` sudah di dependencies). Pastikan filesystem bisa tulis `.data/` (Railway: tambah volume di `/app/.data`, atau relakan state wizard/libur hilang saat redeploy).
 5. **Penjahit `/start`** — setup profil langsung dari HP-nya (lihat PANDUAN.md §1).
-6. **Web (landing + dashboard per akun)** — deploy folder `dashboard/` ke Netlify/GitHub Pages:
-   - `landing.html` = halaman depan publik (ubah jadi `index.html` situs / set redirect); ganti `DEMO_TAILOR_ID` dengan tailor id seed untuk link demo.
-   - `index.html` = dashboard; isi placeholder `__SUPABASE_URL__` + `__SUPABASE_ANON_KEY__` saat deploy, biarkan `__TAILOR_ID__` — tiap penjahit dapat link pribadinya lewat perintah `/dashboard` di bot (UUID tailor = kunci akses).
-   - set `DASHBOARD_BASE_URL` di `.env` bot ke URL dashboard yang dideploy.
-   - **Anon key hanya aman bila RLS aktif read-only** — cek sebelum dibagikan.
+6. **Web (landing + dashboard per akun)** — `scripts/build-dashboard.sh <uuid-tailor-demo>` menghasilkan `dashboard/dist/` (landing = `index.html`, dashboard = `dashboard.html` dengan URL+anon key tertanam). Drag-drop folder `dist` ke Netlify (app.netlify.com → "Deploy manually") atau push ke GitHub Pages. Lalu set `DASHBOARD_BASE_URL=<url-situs>/dashboard.html` di env bot — perintah `/dashboard` tiap penjahit otomatis memakai URL itu. **Anon key hanya aman bila RLS aktif read-only** (sudah diaudit: policy select-only ✅).
 7. **Jangan bagikan** `.env`, service key, atau `dashboard/dev.html` (berisi kredensial).
