@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+dashboard/dev.html
+.data/
+dashboard/sundari.html
+dashboard/landing-local.html
+dashboard/dist/

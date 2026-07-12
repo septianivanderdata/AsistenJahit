@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JuruJahit — Dashboard</title>
+  <style>
+    :root {
+      --emas: #b8860b;      /* emas tua / benang */
+      --emas-soft: #d9a441;
+      --ink: #2b2620;
+      --muted: #8a8378;
+      --bg: #faf7f0;
+      --card: #ffffff;
+      --line: #ece5d8;
+      --ok: #2e7d32;
+      --warn: #c9770a;
+      --bad: #b23b3b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.45;
+    }
+    .wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 60px; }
+    header h1 { margin: 0; font-size: 1.35rem; }
+    header .sub { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+    .accent { color: var(--emas); }
+    .grid { display: grid; gap: 14px; }
+    .cards { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 18px 0; }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 14px 16px;
+    }
+    .card .label { font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+    .card .val { font-size: 1.4rem; font-weight: 700; margin-top: 4px; }
+    .card.star { border-color: var(--emas-soft); box-shadow: 0 0 0 2px rgba(184,134,11,.08); }
+    .card.star .val { color: var(--emas); }
+    section h2 { font-size: 1rem; margin: 26px 0 10px; }
+    /* Kalender */
+    .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+    .cal .dow { font-size: .7rem; color: var(--muted); text-align: center; padding-bottom: 2px; }
+    .cal .day {
+      aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--line);
+      background: var(--card); font-size: .72rem; padding: 4px; position: relative;
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .cal .day .n { color: var(--muted); }
+    .cal .day.off { opacity: .45; }
+    .cal .day .load { font-size: .62rem; color: #fff; text-align: center; border-radius: 4px; padding: 1px 0; }
+    /* Antrian */
+    .q { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .q .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+    .q .name { font-weight: 600; }
+    .q .meta { color: var(--muted); font-size: .85rem; }
+    .badge { font-size: .72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+    .badge.ok { color: var(--ok); border-color: #bfe0c0; }
+    .badge.warn { color: var(--warn); border-color: #f0d3a0; }
+    .badge.bad { color: var(--bad); border-color: #edc2c2; }
+    .empty { color: var(--muted); font-style: italic; padding: 10px 0; }
+    .err { background: #fff3f0; border: 1px solid #edc2c2; color: var(--bad); padding: 12px 14px; border-radius: 10px; }
+    footer { color: var(--muted); font-size: .78rem; margin-top: 30px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🧵 <span id="biz">JuruJahit</span></h1>
+      <div class="sub" id="filled">memuat…</div>
+    </header>
+
+    <div id="alert"></div>
+
+    <div class="grid cards" id="metrics"></div>
+
+    <section>
+      <h2>🗓 Kalender kapasitas</h2>
+      <div class="cal" id="calendar"></div>
+    </section>
+
+    <section>
+      <h2>📋 Antrian aktif</h2>
+      <div id="queue"></div>
+    </section>
+
+    <footer>JuruJahit — Terima. Oper. Tolak. Dengan hitungan, bukan perasaan.</footer>
+  </div>
+
+  <script>
+  // ---- Konfigurasi ----
+  // Isi placeholder ini saat deploy, ATAU override via query param:
+  //   ?url=...&key=<anon>&tailor=<uuid>&token=<rahasia>
+  const CONFIG = {
+    url: "__SUPABASE_URL__",
+    anonKey: "__SUPABASE_ANON_KEY__",
+    tailorId: "__TAILOR_ID__",
+  };
+  const qs = new URLSearchParams(location.search);
+  const URL_ = qs.get("url") || CONFIG.url;
+  const KEY = qs.get("key") || CONFIG.anonKey;
+  const TAILOR = qs.get("tailor") || CONFIG.tailorId;
+
+  const BULAN = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"];
+  const DOW = ["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+  const rupiah = (n) => "Rp" + Math.round(n||0).toLocaleString("id-ID");
+
+  async function rest(path) {
+    const res = await fetch(`${URL_}/rest/v1/${path}`, {
+      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
+    });
+    if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+    return res.json();
+  }
+
+  function badgeFor(o) {
+    if (!o.deadline || !o.finish_date) return ["", "menunggu"];
+    if (o.finish_date < o.deadline) return ["ok", "aman"];
+    if (o.finish_date === o.deadline) return ["warn", "mepet"];
+    return ["bad", "telat"];
+  }
+
+  function isSameMonth(d, ref) { return d && d.slice(0,7) === ref; }
+
+  function renderMetrics(orders, monthRef) {
+    const acc = orders.filter(o => o.status === "accepted");
+    const out = orders.filter(o => o.status === "outsourced");
+    const rej = orders.filter(o => isSameMonth(o.decided_at||o.created_at, monthRef) && o.status === "rejected");
+    const val = (arr) => arr.reduce((s,o)=> s + (Number(o.quoted_price)||0), 0);
+    const marginOper = out.reduce((s,o)=> s + ((Number(o.quoted_price)||0) - (Number(o.outsource_cost)||0)*o.quantity), 0);
+    const cards = [
+      { label: "Order berjalan", val: rupiah(val(acc)) },
+      { label: "Dioper (margin)", val: rupiah(marginOper) },
+      { label: "Ditolak bulan ini", val: rupiah(val(rej)), star: true },
+    ];
+    document.getElementById("metrics").innerHTML = cards.map(c =>
+      `<div class="card ${c.star?'star':''}"><div class="label">${c.label}</div><div class="val">${c.val}</div></div>`
+    ).join("");
+  }
+
+  function renderQueue(orders) {
+    const active = orders.filter(o => o.status === "accepted" || o.status === "outsourced")
+      .sort((a,b)=> (a.deadline||"9999") < (b.deadline||"9999") ? -1 : 1);
+    const el = document.getElementById("queue");
+    if (!active.length) { el.innerHTML = `<div class="empty">Belum ada order aktif.</div>`; return; }
+    el.innerHTML = active.map(o => {
+      const [cls, txt] = badgeFor(o);
+      const dl = o.deadline ? fmt(o.deadline) : "—";
+      const fin = o.finish_date ? fmt(o.finish_date) : "—";
+      const st = o.status === "outsourced" ? "🤝 dioper" : "🟢 dikerjakan";
+      return `<div class="q"><div class="top"><span class="name">${o.quantity}× ${o.item_label}</span>
+        <span class="badge ${cls}">${txt}</span></div>
+        <div class="meta">deadline ${dl} · selesai ~${fin} · ${st}</div></div>`;
+    }).join("");
+  }
+
+  function fmt(iso) { const [y,m,d]=iso.split("-"); return `${+d} ${BULAN[+m-1]}`; }
+
+  function renderCalendar(orders) {
+    // sebar est_hours tiap order accepted secara merata di rentang start..finish
+    const load = {}; // iso -> jam
+    for (const o of orders.filter(x=>x.status==="accepted" && x.start_date && x.finish_date)) {
+      const days = daysBetween(o.start_date, o.finish_date);
+      const per = (Number(o.est_hours)||0) / days.length;
+      for (const d of days) load[d] = (load[d]||0) + per;
+    }
+    const today = new Date();
+    const start = new Date(today); start.setDate(today.getDate() - today.getDay()); // Minggu ini
+    const cal = document.getElementById("calendar");
+    let html = DOW.map(d=>`<div class="dow">${d}</div>`).join("");
+    const maxLoad = Math.max(8, ...Object.values(load));
+    for (let i=0;i<42;i++){
+      const dt = new Date(start); dt.setDate(start.getDate()+i);
+      const iso = dt.toISOString().slice(0,10);
+      const isOff = dt.getDay()===0;
+      const l = load[iso]||0;
+      const intensity = Math.min(1, l/maxLoad);
+      const bg = l>0 ? `background:rgba(184,134,11,${0.15+0.7*intensity})` : "";
+      const loadTag = l>0 ? `<div class="load" style="background:var(--emas)">${l.toFixed(0)}j</div>` : "";
+      html += `<div class="day ${isOff?'off':''}" style="${bg}" title="${iso}: ${l.toFixed(1)} jam">
+        <span class="n">${dt.getDate()}</span>${loadTag}</div>`;
+    }
+    cal.innerHTML = html;
+  }
+
+  function daysBetween(a,b){ const out=[]; let d=new Date(a); const end=new Date(b);
+    while(d<=end){ out.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1);} return out.length?out:[a]; }
+
+  async function main() {
+    if (!URL_ || URL_.startsWith("__") || !TAILOR || TAILOR.startsWith("__")) {
+      document.getElementById("alert").innerHTML =
+        `<div class="err">Belum dikonfigurasi. Buka dengan <code>?url=...&key=...&tailor=...</code> atau isi CONFIG di index.html.</div>`;
+      document.getElementById("filled").textContent = "—";
+      return;
+    }
+    try {
+      const [tailors, orders] = await Promise.all([
+        rest(`tailors?id=eq.${TAILOR}&select=*`),
+        rest(`orders?tailor_id=eq.${TAILOR}&select=*`),
+      ]);
+      const t = tailors[0];
+      if (t) document.getElementById("biz").textContent = t.business_name || t.name || "JuruJahit";
+
+      const monthRef = new Date().toISOString().slice(0,7);
+      const accepted = orders.filter(o=>o.status==="accepted" && o.finish_date);
+      const filled = accepted.reduce((m,o)=> o.finish_date>m?o.finish_date:m, "");
+      document.getElementById("filled").innerHTML = filled
+        ? `Kapasitas terisi sampai <span class="accent">${fmt(filled)}</span>`
+        : "Antrian masih kosong 🎉";
+
+      renderMetrics(orders, monthRef);
+      renderCalendar(orders);
+      renderQueue(orders);
+    } catch (e) {
+      document.getElementById("alert").innerHTML = `<div class="err">Gagal memuat data: ${e.message}</div>`;
+    }
+  }
+  main();
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "jurujahit",
+  "version": "0.1.0",
+  "description": "Asisten AI Telegram untuk penjahit — vonis TERIMA/OPER/TOLAK berdasarkan kapasitas antrian riil.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "seed": "tsx scripts/seed-demo.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@google/genai": "^2.10.0",
+    "@supabase/supabase-js": "^2.45.4",
+    "dotenv": "^16.4.5",
+    "grammy": "^1.30.0",
+    "tsx": "^4.19.1",
+    "ws": "^8.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.5",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}
